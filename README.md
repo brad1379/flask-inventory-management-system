@@ -1,5 +1,110 @@
 # Summative Lab: Python REST API with Flask- Inventory Management System 
 
+A Flask REST API for managing a store's food inventory, with a command line interface (CLI) for employees and product lookups from the [OpenFoodFacts API](https://world.openfoodfacts.org/).
+
+## Project Files
+
+| File | What it does |
+| --- | --- |
+| `app.py` | Flask API with the CRUD routes and the mock inventory data |
+| `openfoodfacts.py` | Functions that look up products on OpenFoodFacts by barcode or name |
+| `cli.py` | Menu-based command line app that talks to the Flask API |
+| `tests/` | Pytest tests for the API, CLI, and OpenFoodFacts functions |
+
+## Installation and Setup
+
+1. Clone the repo and `cd` into it
+2. Install the dependencies:
+   ```bash
+   pipenv install
+   ```
+3. Start the API (runs on http://localhost:5555):
+   ```bash
+   pipenv run python app.py
+   ```
+4. In a second terminal, start the CLI:
+   ```bash
+   pipenv run python cli.py
+   ```
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/inventory` | Get all items |
+| GET | `/inventory/<id>` | Get one item |
+| POST | `/inventory` | Add an item. Needs a `name`, or a `barcode` that is on OpenFoodFacts |
+| PATCH | `/inventory/<id>` | Update an item's `name`, `price`, `stock`, `brands`, or `ingredients_text` |
+| DELETE | `/inventory/<id>` | Delete an item |
+| GET | `/lookup?barcode=<barcode>` | Look up a product on OpenFoodFacts by barcode |
+| GET | `/lookup?name=<name>` | Search OpenFoodFacts by product name (up to 5 results) |
+
+Each item looks like this:
+
+```json
+{
+  "id": 3,
+  "name": "Nutella",
+  "price": 5.49,
+  "stock": 12,
+  "barcode": "3017620422003",
+  "brands": "Nutella, Ferrero",
+  "ingredients_text": "Sugar, palm oil, hazelnuts, skimmed milk powder, cocoa"
+}
+```
+
+If you add an item with a barcode, the API fills in the name, brand, and ingredients from OpenFoodFacts (anything you type yourself is kept). For example:
+
+```bash
+curl -X POST http://localhost:5555/inventory -H "Content-Type: application/json" -d '{"barcode": "3017620422003", "price": 5.49, "stock": 12}'
+```
+
+Errors come back as JSON with a status code, like `{"error": "Item not found"}` with a 404.
+
+## Using the CLI
+
+```
+Welcome to the Food Inventory Management System!
+
+What would you like to do?
+ 1. View all products
+ 2. View one item
+ 3. Add an item
+ 4. Update price/stock
+ 5. Delete an item
+ 6. Find an item on OpenFoodFacts
+ 7. Exit
+```
+
+Example of adding an item by barcode:
+
+```
+3
+Barcode (press Enter to skip): 3017620422003
+Name (press Enter to use the name from OpenFoodFacts):
+Price: 5.49
+Stock: 12
+Item added!
+[4] Nutella - $5.49 (12 in stock)
+    Brand: Nutella, Ferrero
+    Barcode: 3017620422003
+    Ingredients: sugar, palm oil
+```
+
+The CLI asks again if you type something invalid (like letters for a price), and shows a message if the API isn't running.
+
+## Running the Tests
+
+```bash
+pipenv run pytest
+```
+
+The tests use `unittest.mock` so they don't call the real OpenFoodFacts API or need the server running.
+
+---
+
+# Lab Instructions
+
 ## Scenario
 
 You have been hired by a small retail company to develop an inventory management system. This system will allow employees to add, edit, view, and delete inventory items. Additionally, the system will fetch real-time product data from an external API (e.g., OpenFoodFacts API) to supplement product details.
@@ -22,10 +127,10 @@ Update simulated data storage by updating an array.
 
 ### Task 2: Determine the Design 
 For each planned route, determine the necessary route inputs as well as the output of each route. 
-<br>
+
 - Determine what it will change regarding the data given.
 - Determine when each route will be triggered within the CLI application.
-- Utilizingthe  OpenFoodFacts database, build a mock database in an array.
+- Utilizing the OpenFoodFacts database, build a mock database in an array.
 
  The data should resemble what the OpenFoodFacts API may contain: 
 
